@@ -1,0 +1,90 @@
+{% extends 'base.html.twig' %}
+{% block title %}Manager Dashboard — Le Bistro 60{% endblock %}
+
+{% block body %}
+<div class="grid">
+    <div class="card">
+        <h2 style="margin-top:0;">⚠️ Restocking Suggestions (Low Stock)</h2>
+        {% if lowStockIngredients is empty %}
+            <p class="badge badge-ok">All ingredients are above minimum threshold.</p>
+        {% else %}
+            <table>
+                <thead>
+                    <tr>
+                        <th>Ingredient</th>
+                        <th>Stock</th>
+                        <th>Min</th>
+                        <th>Supplier</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for ing in lowStockIngredients %}
+                        <tr>
+                            <td><strong>{{ ing.name }}</strong></td>
+                            <td><span class="badge badge-err">{{ ing.currentStock }} {{ ing.unit }}</span></td>
+                            <td>{{ ing.minStock }} {{ ing.unit }}</td>
+                            <td>{{ ing.supplier ? ing.supplier.name : '—' }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% endif %}
+    </div>
+
+    <div class="card">
+        <h2 style="margin-top:0;">🏆 Best-Selling Dishes (Served)</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Dish</th>
+                    <th>Portions Sold</th>
+                    <th>Revenue</th>
+                    <th>Historical Cost</th>
+                    <th>Realized Margin</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in bestSellers %}
+                    <tr>
+                        <td><strong>{{ row.dishName }}</strong></td>
+                        <td>{{ row.quantitySold }}</td>
+                        <td>{{ row.revenue|number_format(2) }} €</td>
+                        <td>{{ row.historicalCost|number_format(2) }} €</td>
+                        <td><span class="badge badge-ok">{{ (row.revenue - row.historicalCost)|number_format(2) }} €</span></td>
+                    </tr>
+                {% else %}
+                    <tr><td colspan="5">No dishes served yet.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="card">
+    <h2 style="margin-top:0;">📊 Real-Time Dish Cost & Gross Margin Analysis</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Dish</th>
+                <th>Category</th>
+                <th>Selling Price</th>
+                <th>Recipe Cost (Ingredients + Preps)</th>
+                <th>Gross Margin (€)</th>
+                <th>Gross Margin (%)</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for row in margins %}
+                <tr>
+                    <td><strong>{{ row.dish.name }}</strong></td>
+                    <td>{{ row.dish.category }}</td>
+                    <td>{{ row.metrics.price|number_format(2) }} €</td>
+                    <td>{{ row.metrics.cost|number_format(2) }} €</td>
+                    <td><strong>{{ row.metrics.margin|number_format(2) }} €</strong></td>
+                    <td><span class="badge badge-ok">{{ row.metrics.marginPercent }}%</span></td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

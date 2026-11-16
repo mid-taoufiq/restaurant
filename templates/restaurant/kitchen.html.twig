@@ -1,0 +1,53 @@
+{% extends 'base.html.twig' %}
+{% block title %}Kitchen Display System — Le Bistro 60{% endblock %}
+
+{% block body %}
+<div class="card">
+    <h2 style="margin-top:0;">👨‍🍳 Kitchen Display Screen (Real-Time Dish Status)</h2>
+    <p style="color:#475569;">Marking a dish as <strong>Served</strong> automatically deducts recipe & preparation ingredients from stock and snapshots historical cost.</p>
+    <table>
+        <thead>
+            <tr>
+                <th>Order / Table</th>
+                <th>Dish</th>
+                <th>Qty</th>
+                <th>Current Status</th>
+                <th>Kitchen Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in items %}
+                <tr>
+                    <td>Order #{{ item.customerOrder.id }} — <strong>Table #{{ item.customerOrder.tableNumber }}</strong></td>
+                    <td><strong>{{ item.dish.name }}</strong></td>
+                    <td>{{ item.quantity }}</td>
+                    <td>
+                        {% if item.status == 'served' %}
+                            <span class="badge badge-ok">SERVED</span>
+                        {% elseif item.status == 'ready' %}
+                            <span class="badge badge-warn">READY FOR PICKUP</span>
+                        {% else %}
+                            <span class="badge">{{ item.status|upper }}</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if item.status != 'served' %}
+                            <form method="post" action="{{ path('app_kitchen_status', {id: item.id}) }}" style="display:inline-flex; gap:0.4rem;">
+                                {% if item.status == 'pending' %}
+                                    <button name="status" value="preparing" class="btn btn-sm">Start Preparing</button>
+                                {% endif %}
+                                {% if item.status in ['pending', 'preparing'] %}
+                                    <button name="status" value="ready" class="btn btn-sm btn-warn">Mark Ready</button>
+                                {% endif %}
+                                <button name="status" value="served" class="btn btn-sm" style="background:#15803d;">Mark Served (Deduct Stock)</button>
+                            </form>
+                        {% else %}
+                            <span style="font-size:0.82rem; color:#64748b;">Stock deducted (Cost snapshot: {{ item.unitCostSnapshot|number_format(2) }} €)</span>
+                        {% endif %}
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

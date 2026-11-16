@@ -1,0 +1,169 @@
+{% extends 'base.html.twig' %}
+{% block title %}Back-Office & Inventory — Le Bistro 60{% endblock %}
+
+{% block body %}
+<div class="grid">
+    <div class="card">
+        <h3 style="margin-top:0;">📦 Record Supplier Purchase</h3>
+        <form method="post" action="{{ path('app_backoffice') }}">
+            <input type="hidden" name="action" value="purchase">
+            <div style="margin-bottom:0.5rem;">
+                <select name="ingredient_id" required style="width:100%;">
+                    {% for ing in ingredients %}
+                        <option value="{{ ing.id }}">{{ ing.name }} (Stock: {{ ing.currentStock }} {{ ing.unit }} @ {{ ing.unitCost }} €)</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div style="display:flex; gap:0.5rem; margin-bottom:0.5rem;">
+                <input type="number" step="0.01" name="quantity" placeholder="Quantity" required style="flex:1;">
+                <select name="unit">
+                    <option value="kg">kg</option>
+                    <option value="g">g</option>
+                    <option value="L">L</option>
+                    <option value="mL">mL</option>
+                    <option value="piece">piece</option>
+                </select>
+                <input type="number" step="0.01" name="unit_cost" placeholder="New Unit Cost (€)" style="flex:1;">
+            </div>
+            <button type="submit" class="btn">Add Stock Purchase</button>
+        </form>
+    </div>
+
+    <div class="card">
+        <h3 style="margin-top:0;">🗑️ Record Kitchen Loss / Waste</h3>
+        <form method="post" action="{{ path('app_backoffice') }}">
+            <input type="hidden" name="action" value="loss">
+            <div style="margin-bottom:0.5rem;">
+                <select name="ingredient_id" required style="width:100%;">
+                    {% for ing in ingredients %}
+                        <option value="{{ ing.id }}">{{ ing.name }} ({{ ing.currentStock }} {{ ing.unit }})</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div style="display:flex; gap:0.5rem; margin-bottom:0.5rem;">
+                <input type="number" step="0.01" name="quantity" placeholder="Lost Qty" required style="flex:1;">
+                <select name="unit">
+                    <option value="kg">kg</option>
+                    <option value="g">g</option>
+                    <option value="L">L</option>
+                    <option value="mL">mL</option>
+                    <option value="piece">piece</option>
+                </select>
+                <input type="text" name="reason" placeholder="Reason (Expiration, Breakage...)" required style="flex:2;">
+            </div>
+            <button type="submit" class="btn btn-danger">Record Loss</button>
+        </form>
+    </div>
+
+    <div class="card">
+        <h3 style="margin-top:0;">📋 Physical Inventory Count (Discrepancy Calculation)</h3>
+        <form method="post" action="{{ path('app_backoffice') }}">
+            <input type="hidden" name="action" value="inventory">
+            <div style="margin-bottom:0.5rem;">
+                <select name="ingredient_id" required style="width:100%;">
+                    {% for ing in ingredients %}
+                        <option value="{{ ing.id }}">{{ ing.name }} (Theoretical: {{ ing.currentStock }} {{ ing.unit }})</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div style="display:flex; gap:0.5rem; margin-bottom:0.5rem;">
+                <input type="number" step="0.01" name="counted_stock" placeholder="Counted Physical Qty (in stock unit)" required style="flex:1;">
+            </div>
+            <button type="submit" class="btn btn-warn">Apply Inventory & Compute Discrepancy</button>
+        </form>
+    </div>
+</div>
+
+<div class="card">
+    <h3 style="margin-top:0;">➕ Quick Add Dish to Menu</h3>
+    <form method="post" action="{{ path('app_backoffice') }}" style="display:flex; gap:0.5rem; flex-wrap:wrap;">
+        <input type="hidden" name="action" value="create_dish">
+        <input type="text" name="name" placeholder="Dish Name" required>
+        <select name="category">
+            <option value="starter">Starter</option>
+            <option value="main">Main</option>
+            <option value="dessert">Dessert</option>
+            <option value="drink">Drink</option>
+        </select>
+        <input type="number" step="0.1" name="price" placeholder="Selling Price (€)" required>
+        <select name="ingredient_id">
+            {% for ing in ingredients %}
+                <option value="{{ ing.id }}">Main Ingredient: {{ ing.name }} ({{ ing.unit }})</option>
+            {% endfor %}
+        </select>
+        <input type="number" step="0.01" name="ingredient_qty" placeholder="Qty in stock unit" value="0.2">
+        <button type="submit" class="btn">Create Dish</button>
+    </form>
+</div>
+
+<div class="card">
+    <h3 style="margin-top:0;">🥗 Ingredients Inventory ({{ ingredients|length }}) & Open Food Facts Sync</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>Ingredient</th>
+                <th>Stock</th>
+                <th>Min</th>
+                <th>Unit Cost</th>
+                <th>Supplier</th>
+                <th>Barcode (OFF)</th>
+                <th>Allergens</th>
+                <th>Open Food Facts Sync</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for ing in ingredients %}
+                <tr>
+                    <td><strong>{{ ing.name }}</strong></td>
+                    <td>
+                        {% if ing.isLowStock %}
+                            <span class="badge badge-err">{{ ing.currentStock }} {{ ing.unit }}</span>
+                        {% else %}
+                            {{ ing.currentStock }} {{ ing.unit }}
+                        {% endif %}
+                    </td>
+                    <td>{{ ing.minStock }} {{ ing.unit }}</td>
+                    <td>{{ ing.unitCost|number_format(2) }} €/{{ ing.unit }}</td>
+                    <td>{{ ing.supplier ? ing.supplier.name : '—' }}</td>
+                    <td><code>{{ ing.barcode ?? '—' }}</code></td>
+                    <td>{{ ing.allergens is empty ? '—' : ing.allergens|join(', ') }}</td>
+                    <td>
+                        <form method="post" action="{{ path('app_off_sync', {id: ing.id}) }}" style="display:inline-flex; gap:0.3rem;">
+                            <input type="text" name="barcode" value="{{ ing.barcode }}" placeholder="EAN-13 Barcode" style="width:130px; padding:0.25rem 0.4rem; font-size:0.8rem;">
+                            <button type="submit" class="btn btn-sm">Sync OFF</button>
+                        </form>
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<div class="card">
+    <h3 style="margin-top:0;">📜 Recent Stock Movements Audit Log</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>Date</th>
+                <th>Ingredient</th>
+                <th>Type</th>
+                <th>Delta</th>
+                <th>Unit Cost</th>
+                <th>Reason</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for mov in movements %}
+                <tr>
+                    <td>{{ mov.createdAt|date('Y-m-d H:i') }}</td>
+                    <td><strong>{{ mov.ingredient.name }}</strong></td>
+                    <td><span class="badge">{{ mov.type }}</span></td>
+                    <td>{{ mov.quantityDelta > 0 ? '+' ~ mov.quantityDelta : mov.quantityDelta }} {{ mov.ingredient.unit }}</td>
+                    <td>{{ mov.unitCostAtMovement|number_format(2) }} €</td>
+                    <td>{{ mov.reason }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

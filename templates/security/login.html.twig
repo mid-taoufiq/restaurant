@@ -1,0 +1,31 @@
+{% extends 'base.html.twig' %}
+{% block title %}Staff Login — Le Bistro 60{% endblock %}
+
+{% block body %}
+<div class="card" style="max-width:440px; margin:2rem auto;">
+    <h2 style="margin-top:0;">Staff Authentication</h2>
+    {% if error %}
+        <div class="flash flash-error">{{ error.messageKey|trans(error.messageData, 'security') }}</div>
+    {% endif %}
+    <form method="post" action="{{ path('app_login') }}">
+        <div style="margin-bottom:1rem;">
+            <label for="username" style="display:block; font-weight:600; margin-bottom:0.25rem;">Email</label>
+            <input type="email" id="username" name="_username" value="{{ last_username }}" required autofocus style="width:100%;">
+        </div>
+        <div style="margin-bottom:1rem;">
+            <label for="password" style="display:block; font-weight:600; margin-bottom:0.25rem;">Password</label>
+            <input type="password" id="password" name="_password" required style="width:100%;">
+        </div>
+        <button type="submit" class="btn" style="width:100%;">Sign In</button>
+    </form>
+    <hr style="margin:1.25rem 0; border:0; border-top:1px solid #e2e8f0;">
+    <div style="font-size:0.85rem; color:#475569;">
+        <strong>Demo Credentials (Password: <code>password</code>):</strong>
+        <ul style="margin:0.4rem 0 0 1.2rem; padding:0;">
+            <li>Manager: <code>manager@restaurant.local</code></li>
+            <li>Waiter: <code>waiter@restaurant.local</code></li>
+            <li>Kitchen: <code>kitchen@restaurant.local</code></li>
+        </ul>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,71 @@
+{% extends 'base.html.twig' %}
+{% block title %}Waiter Order Taking — Le Bistro 60{% endblock %}
+
+{% block body %}
+<div class="grid">
+    <div class="card">
+        <h2 style="margin-top:0;">📝 Take Table Order (Dining Room)</h2>
+        <form method="post" action="{{ path('app_waiter') }}">
+            <div style="margin-bottom:1rem;">
+                <label style="font-weight:600;">Table Number (1–60):</label>
+                <input type="number" name="table_number" value="1" min="1" max="60" required style="width:90px; margin-left:0.5rem;">
+            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Dish</th>
+                        <th>Category</th>
+                        <th>Price</th>
+                        <th>Status</th>
+                        <th>Qty</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for dish in dishes %}
+                        {% set status = availability[dish.id] %}
+                        <tr>
+                            <td><strong>{{ dish.name }}</strong></td>
+                            <td>{{ dish.category }}</td>
+                            <td>{{ dish.price|number_format(2) }} €</td>
+                            <td>
+                                {% if status.available %}
+                                    <span class="badge badge-ok">In Stock</span>
+                                {% else %}
+                                    <span class="badge badge-err">Out ({{ status.missing|join(', ') }})</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if status.available %}
+                                    <input type="number" name="quantities[{{ dish.id }}]" value="0" min="0" max="20" style="width:65px;">
+                                {% else %}
+                                    <input type="number" disabled value="0" style="width:65px; background:#f1f5f9;">
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            <div style="margin-top:1rem;">
+                <button type="submit" class="btn">Send Order to Kitchen</button>
+            </div>
+        </form>
+    </div>
+
+    <div class="card">
+        <h2 style="margin-top:0;">Recent Table Orders</h2>
+        {% for order in openOrders %}
+            <div style="border:1px solid #e2e8f0; border-radius:6px; padding:0.75rem; margin-bottom:0.75rem;">
+                <div style="display:flex; justify-content:space-between;">
+                    <strong>Table #{{ order.tableNumber }} (Order #{{ order.id }})</strong>
+                    <span class="badge">{{ order.total|number_format(2) }} €</span>
+                </div>
+                <ul style="margin:0.4rem 0 0 1.2rem; padding:0; font-size:0.88rem;">
+                    {% for item in order.items %}
+                        <li>{{ item.quantity }}x {{ item.dish.name }} — <strong>{{ item.status|upper }}</strong></li>
+                    {% endfor %}
+                </ul>
+            </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

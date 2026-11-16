@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Le Bistro 60 — Restaurant Management{% endblock %}</title>
+    <style>
+        :root { --bg: #f8fafc; --card: #ffffff; --text: #0f172a; --muted: #64748b; --primary: #0f766e; --danger: #b91c1c; --warn: #b45309; --border: #e2e8f0; }
+        * { box-sizing: border-box; }
+        body { margin: 0; font-family: system-ui, -apple-system, sans-serif; background: var(--bg); color: var(--text); line-height: 1.5; }
+        header { background: #134e4a; color: #fff; padding: 0.9rem 1.5rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; }
+        header a { color: #ccfbf1; text-decoration: none; font-weight: 500; margin-right: 1rem; }
+        header a:hover { color: #fff; text-decoration: underline; }
+        .container { max-width: 1200px; margin: 1.5rem auto; padding: 0 1rem; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1rem; }
+        .card { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 1.25rem; margin-bottom: 1rem; box-shadow: 0 1px 2px rgba(0,0,0,0.04); }
+        table { width: 100%; border-collapse: collapse; font-size: 0.92rem; }
+        th, td { text-align: left; padding: 0.6rem 0.75rem; border-bottom: 1px solid var(--border); }
+        th { background: #f1f5f9; font-weight: 600; }
+        .badge { display: inline-block; padding: 0.15rem 0.5rem; border-radius: 999px; font-size: 0.75rem; font-weight: 600; background: #e2e8f0; }
+        .badge-ok { background: #dcfce7; color: #166534; }
+        .badge-err { background: #fee2e2; color: #991b1b; }
+        .badge-warn { background: #fef3c7; color: #92400e; }
+        .btn { background: var(--primary); color: #fff; border: none; padding: 0.5rem 0.9rem; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 0.88rem; }
+        .btn-sm { padding: 0.3rem 0.6rem; font-size: 0.8rem; }
+        .btn-warn { background: var(--warn); }
+        .btn-danger { background: var(--danger); }
+        input, select { padding: 0.45rem 0.6rem; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.9rem; }
+        .flash { padding: 0.75rem 1rem; border-radius: 6px; margin-bottom: 1rem; font-weight: 500; }
+        .flash-success { background: #dcfce7; color: #166534; border: 1px solid #86efac; }
+        .flash-error { background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; }
+    </style>
+</head>
+<body>
+<header>
+    <div>
+        <strong style="font-size:1.1rem; margin-right:1.25rem;">🍽️ Le Bistro 60</strong>
+        <a href="{{ path('app_home') }}">Menu & Allergens</a>
+        <a href="{{ path('app_waiter') }}">Waiter (Orders)</a>
+        <a href="{{ path('app_kitchen') }}">Kitchen Screen</a>
+        <a href="{{ path('app_dashboard') }}">Manager Dashboard</a>
+        <a href="{{ path('app_backoffice') }}">Back-Office & Stock</a>
+    </div>
+    <div>
+        {% if app.user %}
+            <span style="font-size:0.88rem; margin-right:0.75rem;">👤 {{ app.user.userIdentifier }} ({{ app.user.roles|join(', ') }})</span>
+            <a href="{{ path('app_logout') }}">Logout</a>
+        {% else %}
+            <a href="{{ path('app_login') }}">Staff Login</a>
+        {% endif %}
+    </div>
+</header>
+<main class="container">
+    {% for label, messages in app.flashes %}
+        {% for msg in messages %}
+            <div class="flash flash-{{ label }}">{{ msg }}</div>
+        {% endfor %}
+    {% endfor %}
+    {% block body %}{% endblock %}
+</main>
+</body>
+</html>
