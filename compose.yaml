@@ -1,0 +1,36 @@
+services:
+  db:
+    image: mysql:8.0
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: restaurant
+      MYSQL_USER: restaurant
+      MYSQL_PASSWORD: restaurant
+    ports:
+      - "3306:3306"
+    volumes:
+      - db_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-urestaurant", "-prestaurant"]
+      interval: 5s
+      timeout: 5s
+      retries: 15
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      APP_ENV: dev
+      APP_SECRET: f8c3d9a1b2e4f6a8c0d2e4f6a8b0c2d4
+      DATABASE_URL: "mysql://restaurant:restaurant@db:3306/restaurant?serverVersion=8.0&charset=utf8mb4"
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  db_data:
